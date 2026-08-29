@@ -27,6 +27,12 @@ function createToken(user: Pick<User, 'id' | 'role'>) {
 
 export const AuthService = {
   async register(data: RegisterPayload) {
+    const totalUsers = await prisma.user.count();
+
+    if (totalUsers > 0) {
+      throw new AppError('Cadastro publico desabilitado. Solicite acesso a um ADMIN.', 403);
+    }
+
     const emailInUse = await prisma.user.findUnique({
       where: { email: data.email }
     });
@@ -35,9 +41,8 @@ export const AuthService = {
       throw new AppError('E-mail ja cadastrado.', 409);
     }
 
-    const totalUsers = await prisma.user.count();
     const passwordHash = await bcrypt.hash(data.password, 10);
-    const role = totalUsers === 0 ? Role.ADMIN : Role.USER;
+    const role = Role.ADMIN;
 
     const user = await prisma.user.create({
       data: {

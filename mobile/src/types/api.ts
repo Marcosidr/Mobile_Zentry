@@ -7,6 +7,8 @@ export interface User {
   name: string;
   email: string;
   role: Role;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Category {
@@ -52,4 +54,3 @@ export interface StockMovementResponse {
   movement: StockMovement;
   product: Product;
 }
-

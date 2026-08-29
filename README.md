@@ -70,8 +70,8 @@ Credenciais de demonstracao apos o seed:
 ## Endpoints principais
 
 - `POST /api/auth/login`
-- `POST /api/auth/register`
-- `GET /api/products`
+- `POST /api/auth/register` (somente primeiro usuario em banco vazio)
+- `GET /api/users` (ADMIN)`r`n- `POST /api/users` (ADMIN)`r`n- `PUT /api/users/:id` (ADMIN)`r`n- `DELETE /api/users/:id` (ADMIN)`r`n- `GET /api/products`
 - `POST /api/products`
 - `PUT /api/products/:id`
 - `DELETE /api/products/:id`

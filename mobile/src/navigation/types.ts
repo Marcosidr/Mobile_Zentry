@@ -6,5 +6,6 @@ export type RootStackParamList = {
   ProductDetails: { productId: string };
   ProductForm: { productId?: string } | undefined;
   StockMovement: { productId: string; type: MovementType };
+  Users: undefined;
+  UserForm: { userId?: string } | undefined;
 };
-

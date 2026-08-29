@@ -8,6 +8,8 @@ import { ProductDetailsScreen } from '../screens/ProductDetailsScreen';
 import { ProductFormScreen } from '../screens/ProductFormScreen';
 import { ProductsScreen } from '../screens/ProductsScreen';
 import { StockMovementScreen } from '../screens/StockMovementScreen';
+import { UserFormScreen } from '../screens/UserFormScreen';
+import { UsersScreen } from '../screens/UsersScreen';
 import type { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -42,6 +44,8 @@ export function AppNavigator() {
             <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} />
             <Stack.Screen name="ProductForm" component={ProductFormScreen} />
             <Stack.Screen name="StockMovement" component={StockMovementScreen} />
+            <Stack.Screen name="Users" component={UsersScreen} />
+            <Stack.Screen name="UserForm" component={UserFormScreen} />
           </>
         ) : (
           <Stack.Screen name="Login" component={LoginScreen} />
@@ -64,4 +68,3 @@ const styles = StyleSheet.create({
     fontSize: 15
   }
 });
-

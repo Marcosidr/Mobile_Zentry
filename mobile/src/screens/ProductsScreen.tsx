@@ -1,6 +1,6 @@
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { LogOut, Plus, RefreshCcw, Search } from 'lucide-react-native';
+import { LogOut, Plus, RefreshCcw, Search, Users } from 'lucide-react-native';
 import { useCallback, useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../components/Button';
@@ -89,11 +89,19 @@ export function ProductsScreen({ navigation }: ProductsScreenProps) {
 
       <View style={styles.actionRow}>
         {user?.role === 'ADMIN' ? (
-          <Button
-            label="Novo produto"
-            onPress={() => navigation.navigate('ProductForm')}
-            icon={<Plus size={18} color={colors.white} />}
-          />
+          <>
+            <Button
+              label="Novo produto"
+              onPress={() => navigation.navigate('ProductForm')}
+              icon={<Plus size={18} color={colors.white} />}
+            />
+            <Button
+              label="Usuarios"
+              onPress={() => navigation.navigate('Users')}
+              variant="secondary"
+              icon={<Users size={18} color={colors.text} />}
+            />
+          </>
         ) : null}
         <Button
           label="Atualizar"
@@ -146,6 +154,7 @@ const styles = StyleSheet.create({
   },
   actionRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: spacing.md
   },
   listContent: {
