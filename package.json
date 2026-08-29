@@ -1,0 +1,15 @@
+{
+  "name": "mobile-zentry",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev:api": "npm --prefix api run dev",
+    "dev:mobile": "npm --prefix mobile run start",
+    "build": "npm --prefix api run build",
+    "typecheck": "npm --prefix api run typecheck && npm --prefix mobile run typecheck",
+    "db:generate": "npm --prefix api run prisma:generate",
+    "db:migrate": "npm --prefix api run prisma:migrate",
+    "db:seed": "npm --prefix api run prisma:seed"
+  }
+}
+
