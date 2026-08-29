@@ -65,7 +65,7 @@ Credenciais de demonstracao apos o seed:
 - Admin: `admin@stockflow.com` / `admin123`
 - Usuario: `user@stockflow.com` / `user123`
 
-> Em emulador Android, use `EXPO_PUBLIC_API_URL=http://10.0.2.2:3333/api` no arquivo `mobile/.env`.
+> O PostgreSQL do Docker usa a porta local `5433` para evitar conflito com instalacoes locais do PostgreSQL. Em emulador Android, use `EXPO_PUBLIC_API_URL=http://10.0.2.2:3333/api` no arquivo `mobile/.env`.
 
 ## Endpoints principais
 
