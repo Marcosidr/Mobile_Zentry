@@ -10,6 +10,19 @@ export const CategoryService = {
     });
   },
 
+  async findById(id: string) {
+    const category = await prisma.category.findUnique({
+      where: { id },
+      include: { _count: { select: { products: true } } }
+    });
+
+    if (!category) {
+      throw new AppError('Categoria nao encontrada.', 404);
+    }
+
+    return category;
+  },
+
   create(data: CategoryPayload) {
     return prisma.category.create({ data });
   },
@@ -41,4 +54,3 @@ export const CategoryService = {
     await prisma.category.delete({ where: { id } });
   }
 };
-

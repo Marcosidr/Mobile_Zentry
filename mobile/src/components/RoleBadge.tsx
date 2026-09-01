@@ -1,5 +1,7 @@
+import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { colors, radius, spacing } from '../constants/theme';
+import { radius, spacing } from '../constants/theme';
+import { useTheme } from '../contexts/ThemeContext';
 import type { Role } from '../types/api';
 
 type RoleBadgeProps = {
@@ -7,31 +9,35 @@ type RoleBadgeProps = {
 };
 
 export function RoleBadge({ role }: RoleBadgeProps) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(), []);
   const isAdmin = role === 'ADMIN';
 
   return (
     <View
       style={[
         styles.badge,
-        { backgroundColor: isAdmin ? colors.primary : colors.warning }
+        { backgroundColor: isAdmin ? theme.primary : theme.warning }
       ]}
     >
-      <Text style={styles.text}>{isAdmin ? 'ADMIN' : 'USER'}</Text>
+      <Text style={[styles.text, { color: isAdmin ? theme.white : theme.black }]}>
+        {isAdmin ? 'ADMIN' : 'USER'}
+      </Text>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  badge: {
-    alignSelf: 'flex-start',
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    borderRadius: radius.sm
-  },
-  text: {
-    color: colors.white,
-    fontSize: 12,
-    fontWeight: '800'
-  }
-});
-
+function createStyles() {
+  return StyleSheet.create({
+    badge: {
+      alignSelf: 'flex-start',
+      paddingVertical: spacing.xs,
+      paddingHorizontal: spacing.sm,
+      borderRadius: radius.sm
+    },
+    text: {
+      fontSize: 12,
+      fontWeight: '900'
+    }
+  });
+}

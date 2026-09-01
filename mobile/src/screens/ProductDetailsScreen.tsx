@@ -1,5 +1,4 @@
 import { useFocusEffect } from '@react-navigation/native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
   ArrowDownCircle,
   ArrowLeft,
@@ -8,26 +7,26 @@ import {
   ImageIcon,
   Trash2
 } from 'lucide-react-native';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Alert, Image, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../components/Button';
 import { Header } from '../components/Header';
 import { IconButton } from '../components/IconButton';
 import { Screen } from '../components/Screen';
-import { colors, radius, spacing } from '../constants/theme';
+import { radius, spacing } from '../constants/theme';
 import { useAuth } from '../contexts/AuthContext';
-import type { RootStackParamList } from '../navigation/types';
+import { useTheme } from '../contexts/ThemeContext';
+import type { RootStackScreenProps } from '../navigation/types';
 import { api, resolveAssetUrl } from '../services/api';
 import type { Product } from '../types/api';
 import { formatCurrency, getApiErrorMessage } from '../utils/formatters';
 
-type ProductDetailsProps = NativeStackScreenProps<
-  RootStackParamList,
-  'ProductDetails'
->;
+type ProductDetailsProps = RootStackScreenProps<'ProductDetails'>;
 
 export function ProductDetailsScreen({ navigation, route }: ProductDetailsProps) {
   const { user } = useAuth();
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const imageUri = resolveAssetUrl(product?.imageUrl);
@@ -83,7 +82,7 @@ export function ProductDetailsScreen({ navigation, route }: ProductDetailsProps)
             <IconButton
               label="Voltar"
               onPress={() => navigation.goBack()}
-              icon={<ArrowLeft size={20} color={colors.text} />}
+              icon={<ArrowLeft size={20} color={theme.text} />}
             />
           }
         />
@@ -103,7 +102,7 @@ export function ProductDetailsScreen({ navigation, route }: ProductDetailsProps)
           <IconButton
             label="Voltar"
             onPress={() => navigation.goBack()}
-            icon={<ArrowLeft size={20} color={colors.text} />}
+            icon={<ArrowLeft size={20} color={theme.text} />}
           />
         }
       />
@@ -112,23 +111,23 @@ export function ProductDetailsScreen({ navigation, route }: ProductDetailsProps)
         <Image source={{ uri: imageUri }} style={styles.heroImage} />
       ) : (
         <View style={styles.heroPlaceholder}>
-          <ImageIcon size={44} color={colors.muted} />
+          <ImageIcon size={44} color={theme.muted} />
         </View>
       )}
 
       <View style={styles.summary}>
-        <View>
+        <View style={styles.summaryItem}>
           <Text style={styles.label}>Preco</Text>
           <Text style={styles.value}>{formatCurrency(product.price)}</Text>
         </View>
-        <View>
+        <View style={styles.summaryItem}>
           <Text style={styles.label}>Estoque atual</Text>
           <Text style={[styles.value, isLowStock ? styles.lowValue : null]}>
             {product.quantity}
           </Text>
         </View>
-        <View>
-          <Text style={styles.label}>Estoque minimo</Text>
+        <View style={styles.summaryItem}>
+          <Text style={styles.label}>Minimo</Text>
           <Text style={styles.value}>{product.minimumStock}</Text>
         </View>
       </View>
@@ -153,7 +152,7 @@ export function ProductDetailsScreen({ navigation, route }: ProductDetailsProps)
               type: 'ENTRADA'
             })
           }
-          icon={<ArrowUpCircle size={18} color={colors.white} />}
+          icon={<ArrowUpCircle size={18} color={theme.white} />}
         />
         <Button
           label="Saida"
@@ -164,7 +163,7 @@ export function ProductDetailsScreen({ navigation, route }: ProductDetailsProps)
               type: 'SAIDA'
             })
           }
-          icon={<ArrowDownCircle size={18} color={colors.text} />}
+          icon={<ArrowDownCircle size={18} color={theme.text} />}
         />
       </View>
 
@@ -176,13 +175,13 @@ export function ProductDetailsScreen({ navigation, route }: ProductDetailsProps)
             onPress={() =>
               navigation.navigate('ProductForm', { productId: product.id })
             }
-            icon={<Edit3 size={18} color={colors.text} />}
+            icon={<Edit3 size={18} color={theme.text} />}
           />
           <Button
             label="Excluir"
             variant="danger"
             onPress={confirmDelete}
-            icon={<Trash2 size={18} color={colors.white} />}
+            icon={<Trash2 size={18} color={theme.white} />}
           />
         </View>
       ) : null}
@@ -190,72 +189,82 @@ export function ProductDetailsScreen({ navigation, route }: ProductDetailsProps)
   );
 }
 
-const styles = StyleSheet.create({
-  loadingText: {
-    color: colors.muted,
-    textAlign: 'center'
-  },
-  heroImage: {
-    width: '100%',
-    aspectRatio: 1.6,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface
-  },
-  heroPlaceholder: {
-    width: '100%',
-    aspectRatio: 1.6,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  summary: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-    padding: spacing.md
-  },
-  label: {
-    color: colors.muted,
-    fontSize: 12,
-    marginBottom: spacing.xs
-  },
-  value: {
-    color: colors.text,
-    fontSize: 18,
-    fontWeight: '900'
-  },
-  lowValue: {
-    color: colors.warning
-  },
-  section: {
-    gap: spacing.sm
-  },
-  sectionTitle: {
-    color: colors.text,
-    fontSize: 18,
-    fontWeight: '800'
-  },
-  paragraph: {
-    color: colors.text,
-    fontSize: 15,
-    lineHeight: 22
-  },
-  meta: {
-    color: colors.muted,
-    fontSize: 14
-  },
-  actionGrid: {
-    flexDirection: 'row',
-    gap: spacing.md
-  },
-  adminActions: {
-    gap: spacing.md
-  }
-});
+function createStyles(theme: ReturnType<typeof useTheme>['theme']) {
+  return StyleSheet.create({
+    loadingText: {
+      color: theme.muted,
+      textAlign: 'center',
+      fontWeight: '700'
+    },
+    heroImage: {
+      width: '100%',
+      aspectRatio: 1.6,
+      borderRadius: radius.md,
+      backgroundColor: theme.surfaceMuted
+    },
+    heroPlaceholder: {
+      width: '100%',
+      aspectRatio: 1.6,
+      borderRadius: radius.md,
+      backgroundColor: theme.surface,
+      borderWidth: 1,
+      borderColor: theme.border,
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    summary: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      gap: spacing.sm,
+      borderWidth: 1,
+      borderColor: theme.border,
+      borderRadius: radius.md,
+      backgroundColor: theme.surface,
+      padding: spacing.md
+    },
+    summaryItem: {
+      flex: 1,
+      gap: spacing.xs
+    },
+    label: {
+      color: theme.muted,
+      fontSize: 12,
+      fontWeight: '800'
+    },
+    value: {
+      color: theme.text,
+      fontSize: 18,
+      fontWeight: '900'
+    },
+    lowValue: {
+      color: theme.warning
+    },
+    section: {
+      gap: spacing.sm
+    },
+    sectionTitle: {
+      color: theme.text,
+      fontSize: 18,
+      fontWeight: '900'
+    },
+    paragraph: {
+      color: theme.text,
+      fontSize: 15,
+      lineHeight: 22
+    },
+    meta: {
+      color: theme.muted,
+      fontSize: 14,
+      lineHeight: 20,
+      fontWeight: '600'
+    },
+    actionGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.md
+    },
+    adminActions: {
+      gap: spacing.md
+    }
+  });
+}

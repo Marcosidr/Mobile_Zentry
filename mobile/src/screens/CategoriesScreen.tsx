@@ -3,41 +3,41 @@ import { Plus, RefreshCcw } from 'lucide-react-native';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../components/Button';
+import { CategoryCard } from '../components/CategoryCard';
 import { EmptyState } from '../components/EmptyState';
 import { Header } from '../components/Header';
 import { Screen } from '../components/Screen';
-import { UserCard } from '../components/UserCard';
 import { spacing } from '../constants/theme';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import type { MainTabScreenProps } from '../navigation/types';
 import { api } from '../services/api';
-import type { User } from '../types/api';
+import type { Category } from '../types/api';
 import { getApiErrorMessage } from '../utils/formatters';
 
-type UsersScreenProps = MainTabScreenProps<'UsersTab'>;
+type CategoriesScreenProps = MainTabScreenProps<'CategoriesTab'>;
 
-export function UsersScreen({ navigation }: UsersScreenProps) {
+export function CategoriesScreen({ navigation }: CategoriesScreenProps) {
   const { user } = useAuth();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
-  const [users, setUsers] = useState<User[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (user?.role !== 'ADMIN') {
-      Alert.alert('Usuarios', 'Somente ADMIN pode gerenciar usuarios.');
+      Alert.alert('Categorias', 'Somente ADMIN pode gerenciar categorias.');
       navigation.navigate('ProductsTab');
     }
   }, [navigation, user?.role]);
 
-  const loadUsers = useCallback(async () => {
+  const loadCategories = useCallback(async () => {
     try {
-      const { data } = await api.get<User[]>('/users');
-      setUsers(data);
+      const { data } = await api.get<Category[]>('/categories');
+      setCategories(data);
     } catch (error) {
-      Alert.alert('Usuarios', getApiErrorMessage(error));
+      Alert.alert('Categorias', getApiErrorMessage(error));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -47,47 +47,47 @@ export function UsersScreen({ navigation }: UsersScreenProps) {
   useFocusEffect(
     useCallback(() => {
       if (user?.role === 'ADMIN') {
-        void loadUsers();
+        void loadCategories();
       }
-    }, [loadUsers, user?.role])
+    }, [loadCategories, user?.role])
   );
 
   async function handleRefresh() {
     setRefreshing(true);
-    await loadUsers();
+    await loadCategories();
   }
 
-  function confirmDelete(selectedUser: User) {
-    Alert.alert('Excluir usuario', `Deseja excluir ${selectedUser.name}?`, [
+  function confirmDelete(category: Category) {
+    Alert.alert('Excluir categoria', `Deseja excluir ${category.name}?`, [
       { text: 'Cancelar', style: 'cancel' },
       {
         text: 'Excluir',
         style: 'destructive',
-        onPress: () => void handleDelete(selectedUser.id)
+        onPress: () => void handleDelete(category.id)
       }
     ]);
   }
 
-  async function handleDelete(userId: string) {
+  async function handleDelete(categoryId: string) {
     try {
-      await api.delete(`/users/${userId}`);
-      setUsers((currentUsers) => currentUsers.filter((item) => item.id !== userId));
+      await api.delete(`/categories/${categoryId}`);
+      setCategories((current) => current.filter((item) => item.id !== categoryId));
     } catch (error) {
-      Alert.alert('Excluir usuario', getApiErrorMessage(error));
+      Alert.alert('Excluir categoria', getApiErrorMessage(error));
     }
   }
 
   return (
     <Screen scroll={false}>
       <Header
-        title="Usuarios"
-        subtitle="Controle de acesso do sistema"
+        title="Categorias"
+        subtitle="Organize produtos por trilhas e setores do estoque"
       />
 
       <View style={styles.actionRow}>
         <Button
-          label="Novo usuario"
-          onPress={() => navigation.navigate('UserForm')}
+          label="Nova categoria"
+          onPress={() => navigation.navigate('CategoryForm')}
           icon={<Plus size={18} color={theme.white} />}
         />
         <Button
@@ -99,27 +99,26 @@ export function UsersScreen({ navigation }: UsersScreenProps) {
       </View>
 
       <FlatList
-        data={users}
+        data={categories}
         keyExtractor={(item) => item.id}
         refreshing={refreshing}
         onRefresh={handleRefresh}
         contentContainerStyle={styles.listContent}
         renderItem={({ item }) => (
-          <UserCard
-            user={item}
-            currentUserId={user?.id}
-            onEdit={() => navigation.navigate('UserForm', { userId: item.id })}
+          <CategoryCard
+            category={item}
+            onEdit={() => navigation.navigate('CategoryForm', { categoryId: item.id })}
             onDelete={() => confirmDelete(item)}
           />
         )}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         ListEmptyComponent={
           loading ? (
-            <Text style={styles.loadingText}>Carregando usuarios...</Text>
+            <Text style={styles.loadingText}>Carregando categorias...</Text>
           ) : (
             <EmptyState
-              title="Nenhum usuario encontrado"
-              message="Cadastre usuarios para liberar acesso operacional ao estoque."
+              title="Nenhuma categoria encontrada"
+              message="Crie categorias para separar melhor os produtos do estoque."
             />
           )
         }
@@ -137,7 +136,7 @@ function createStyles(theme: ReturnType<typeof useTheme>['theme']) {
     },
     listContent: {
       flexGrow: 1,
-      paddingBottom: spacing.xxl
+      paddingBottom: spacing.xl
     },
     separator: {
       height: spacing.md
@@ -150,3 +149,5 @@ function createStyles(theme: ReturnType<typeof useTheme>['theme']) {
     }
   });
 }
+
+

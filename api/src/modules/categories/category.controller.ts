@@ -8,6 +8,11 @@ export const CategoryController = {
     response.json(categories);
   }),
 
+  findById: asyncHandler(async (request, response) => {
+    const category = await CategoryService.findById(getParam(request, 'id'));
+    response.json(category);
+  }),
+
   create: asyncHandler(async (request, response) => {
     const category = await CategoryService.create(request.body);
     response.status(201).json(category);

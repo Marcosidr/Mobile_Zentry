@@ -1,21 +1,21 @@
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ArrowLeft, Save, ShieldCheck, UserCircle } from 'lucide-react-native';
 import type { ReactNode } from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../components/Button';
 import { Header } from '../components/Header';
 import { IconButton } from '../components/IconButton';
 import { Screen } from '../components/Screen';
 import { TextField } from '../components/TextField';
-import { colors, radius, spacing } from '../constants/theme';
+import { radius, spacing } from '../constants/theme';
 import { useAuth } from '../contexts/AuthContext';
-import type { RootStackParamList } from '../navigation/types';
+import { useTheme } from '../contexts/ThemeContext';
+import type { RootStackScreenProps } from '../navigation/types';
 import { api } from '../services/api';
 import type { Role, User } from '../types/api';
 import { getApiErrorMessage } from '../utils/formatters';
 
-type UserFormScreenProps = NativeStackScreenProps<RootStackParamList, 'UserForm'>;
+type UserFormScreenProps = RootStackScreenProps<'UserForm'>;
 
 type FormState = {
   name: string;
@@ -33,6 +33,8 @@ const initialForm: FormState = {
 
 export function UserFormScreen({ navigation, route }: UserFormScreenProps) {
   const { user: currentUser } = useAuth();
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const userId = route.params?.userId;
   const isEditing = Boolean(userId);
   const [form, setForm] = useState<FormState>(initialForm);
@@ -108,7 +110,7 @@ export function UserFormScreen({ navigation, route }: UserFormScreenProps) {
         await api.post('/users', payload);
       }
 
-      navigation.replace('Users');
+      navigation.navigate('MainTabs', { screen: 'UsersTab' });
     } catch (error) {
       Alert.alert('Salvar usuario', getApiErrorMessage(error));
     } finally {
@@ -125,7 +127,7 @@ export function UserFormScreen({ navigation, route }: UserFormScreenProps) {
           <IconButton
             label="Voltar"
             onPress={() => navigation.goBack()}
-            icon={<ArrowLeft size={20} color={colors.text} />}
+            icon={<ArrowLeft size={20} color={theme.text} />}
           />
         }
       />
@@ -135,6 +137,8 @@ export function UserFormScreen({ navigation, route }: UserFormScreenProps) {
           label="Nome"
           value={form.name}
           onChangeText={(value) => updateForm('name', value)}
+          autoCapitalize="words"
+          textContentType="name"
         />
         <TextField
           label="E-mail"
@@ -142,12 +146,14 @@ export function UserFormScreen({ navigation, route }: UserFormScreenProps) {
           onChangeText={(value) => updateForm('email', value)}
           autoCapitalize="none"
           keyboardType="email-address"
+          textContentType="emailAddress"
         />
         <TextField
           label={isEditing ? 'Nova senha' : 'Senha'}
           value={form.password}
           onChangeText={(value) => updateForm('password', value)}
           secureTextEntry
+          textContentType="newPassword"
           placeholder={isEditing ? 'Deixe em branco para manter' : undefined}
         />
 
@@ -157,13 +163,13 @@ export function UserFormScreen({ navigation, route }: UserFormScreenProps) {
             <RoleOption
               label="USER"
               selected={form.role === 'USER'}
-              icon={<UserCircle size={20} color={form.role === 'USER' ? colors.white : colors.muted} />}
+              icon={<UserCircle size={20} color={form.role === 'USER' ? theme.white : theme.muted} />}
               onPress={() => updateForm('role', 'USER')}
             />
             <RoleOption
               label="ADMIN"
               selected={form.role === 'ADMIN'}
-              icon={<ShieldCheck size={20} color={form.role === 'ADMIN' ? colors.white : colors.primary} />}
+              icon={<ShieldCheck size={20} color={form.role === 'ADMIN' ? theme.white : theme.primary} />}
               onPress={() => updateForm('role', 'ADMIN')}
             />
           </View>
@@ -173,7 +179,7 @@ export function UserFormScreen({ navigation, route }: UserFormScreenProps) {
           label="Salvar usuario"
           onPress={() => void handleSubmit()}
           loading={loading}
-          icon={<Save size={18} color={colors.white} />}
+          icon={<Save size={18} color={theme.white} />}
         />
       </View>
     </Screen>
@@ -188,6 +194,9 @@ interface RoleOptionProps {
 }
 
 function RoleOption({ label, selected, icon, onPress }: RoleOptionProps) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -206,44 +215,46 @@ function RoleOption({ label, selected, icon, onPress }: RoleOptionProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  form: {
-    gap: spacing.lg
-  },
-  roleGroup: {
-    gap: spacing.sm
-  },
-  roleLabel: {
-    color: colors.text,
-    fontSize: 14,
-    fontWeight: '700'
-  },
-  roleRow: {
-    flexDirection: 'row',
-    gap: spacing.md
-  },
-  roleOption: {
-    flex: 1,
-    minHeight: 48,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface
-  },
-  roleOptionSelected: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary
-  },
-  roleText: {
-    color: colors.text,
-    fontSize: 14,
-    fontWeight: '800'
-  },
-  roleTextSelected: {
-    color: colors.white
-  }
-});
+function createStyles(theme: ReturnType<typeof useTheme>['theme']) {
+  return StyleSheet.create({
+    form: {
+      gap: spacing.lg
+    },
+    roleGroup: {
+      gap: spacing.sm
+    },
+    roleLabel: {
+      color: theme.text,
+      fontSize: 14,
+      fontWeight: '800'
+    },
+    roleRow: {
+      flexDirection: 'row',
+      gap: spacing.md
+    },
+    roleOption: {
+      flex: 1,
+      minHeight: 50,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.sm,
+      borderRadius: radius.md,
+      borderWidth: 1,
+      borderColor: theme.border,
+      backgroundColor: theme.surface
+    },
+    roleOptionSelected: {
+      backgroundColor: theme.primary,
+      borderColor: theme.primary
+    },
+    roleText: {
+      color: theme.text,
+      fontSize: 14,
+      fontWeight: '900'
+    },
+    roleTextSelected: {
+      color: theme.white
+    }
+  });
+}

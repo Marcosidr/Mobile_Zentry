@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
+import { useMemo } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
-import { colors, radius } from '../constants/theme';
+import { radius } from '../constants/theme';
+import { useTheme } from '../contexts/ThemeContext';
 
 type IconButtonProps = {
   icon: ReactNode;
@@ -9,6 +11,9 @@ type IconButtonProps = {
 };
 
 export function IconButton({ icon, onPress, label }: IconButtonProps) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -21,16 +26,17 @@ export function IconButton({ icon, onPress, label }: IconButtonProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  button: {
-    width: 44,
-    height: 44,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center'
-  }
-});
-
+function createStyles(theme: ReturnType<typeof useTheme>['theme']) {
+  return StyleSheet.create({
+    button: {
+      width: 44,
+      height: 44,
+      borderRadius: radius.md,
+      borderWidth: 1,
+      borderColor: theme.border,
+      backgroundColor: theme.surface,
+      alignItems: 'center',
+      justifyContent: 'center'
+    }
+  });
+}

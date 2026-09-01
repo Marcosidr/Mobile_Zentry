@@ -1,22 +1,20 @@
-import { ShieldCheck, Trash2, UserCircle } from 'lucide-react-native';
+import { ChevronRight, Tags, Trash2 } from 'lucide-react-native';
 import { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { radius, spacing } from '../constants/theme';
 import { useTheme } from '../contexts/ThemeContext';
-import type { User } from '../types/api';
-import { RoleBadge } from './RoleBadge';
+import type { Category } from '../types/api';
 
-interface UserCardProps {
-  user: User;
-  currentUserId?: string;
+type CategoryCardProps = {
+  category: Category;
   onEdit: () => void;
   onDelete: () => void;
-}
+};
 
-export function UserCard({ user, currentUserId, onEdit, onDelete }: UserCardProps) {
+export function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) {
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
-  const isCurrentUser = user.id === currentUserId;
+  const productsCount = category._count?.products ?? 0;
 
   return (
     <Pressable
@@ -24,40 +22,29 @@ export function UserCard({ user, currentUserId, onEdit, onDelete }: UserCardProp
       onPress={onEdit}
       style={({ pressed }) => [styles.card, { opacity: pressed ? 0.9 : 1 }]}
     >
-      <View style={styles.avatar}>
-        {user.role === 'ADMIN' ? (
-          <ShieldCheck size={24} color={theme.primary} />
-        ) : (
-          <UserCircle size={24} color={theme.muted} />
-        )}
+      <View style={styles.iconBox}>
+        <Tags size={24} color={theme.primary} />
       </View>
 
       <View style={styles.content}>
-        <View style={styles.titleRow}>
-          <Text style={styles.name} numberOfLines={1}>
-            {user.name}
-          </Text>
-          <RoleBadge role={user.role} />
-        </View>
-        <Text style={styles.email} numberOfLines={1}>
-          {user.email}
+        <Text style={styles.name} numberOfLines={1}>{category.name}</Text>
+        <Text style={styles.meta} numberOfLines={1}>
+          {productsCount} {productsCount === 1 ? 'produto vinculado' : 'produtos vinculados'}
         </Text>
-        {isCurrentUser ? <Text style={styles.current}>Conta atual</Text> : null}
       </View>
 
-      {!isCurrentUser ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Excluir usuario"
-          onPress={(event) => {
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Excluir categoria"
+        onPress={(event) => {
           event.stopPropagation();
           onDelete();
         }}
-          style={({ pressed }) => [styles.deleteButton, { opacity: pressed ? 0.72 : 1 }]}
-        >
-          <Trash2 size={18} color={theme.danger} />
-        </Pressable>
-      ) : null}
+        style={({ pressed }) => [styles.deleteButton, { opacity: pressed ? 0.72 : 1 }]}
+      >
+        <Trash2 size={18} color={theme.danger} />
+      </Pressable>
+      <ChevronRight size={20} color={theme.muted} />
     </Pressable>
   );
 }
@@ -65,7 +52,7 @@ export function UserCard({ user, currentUserId, onEdit, onDelete }: UserCardProp
 function createStyles(theme: ReturnType<typeof useTheme>['theme']) {
   return StyleSheet.create({
     card: {
-      minHeight: 96,
+      minHeight: 86,
       flexDirection: 'row',
       alignItems: 'center',
       gap: spacing.md,
@@ -75,7 +62,7 @@ function createStyles(theme: ReturnType<typeof useTheme>['theme']) {
       backgroundColor: theme.surface,
       padding: spacing.md
     },
-    avatar: {
+    iconBox: {
       width: 52,
       height: 52,
       borderRadius: radius.md,
@@ -89,26 +76,15 @@ function createStyles(theme: ReturnType<typeof useTheme>['theme']) {
       flex: 1,
       gap: spacing.xs
     },
-    titleRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: spacing.sm
-    },
     name: {
-      flex: 1,
       color: theme.text,
       fontSize: 16,
       fontWeight: '900'
     },
-    email: {
+    meta: {
       color: theme.muted,
       fontSize: 13,
       fontWeight: '600'
-    },
-    current: {
-      color: theme.primary,
-      fontSize: 12,
-      fontWeight: '900'
     },
     deleteButton: {
       width: 40,
@@ -120,3 +96,4 @@ function createStyles(theme: ReturnType<typeof useTheme>['theme']) {
     }
   });
 }
+

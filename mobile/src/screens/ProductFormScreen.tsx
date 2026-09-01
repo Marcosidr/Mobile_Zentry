@@ -1,8 +1,7 @@
 import { useFocusEffect } from '@react-navigation/native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as ImagePicker from 'expo-image-picker';
 import { ArrowLeft, Camera, Save } from 'lucide-react-native';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   Alert,
   Image,
@@ -17,13 +16,14 @@ import { Header } from '../components/Header';
 import { IconButton } from '../components/IconButton';
 import { Screen } from '../components/Screen';
 import { TextField } from '../components/TextField';
-import { colors, radius, spacing } from '../constants/theme';
-import type { RootStackParamList } from '../navigation/types';
+import { radius, spacing } from '../constants/theme';
+import { useTheme } from '../contexts/ThemeContext';
+import type { RootStackScreenProps } from '../navigation/types';
 import { api, resolveAssetUrl } from '../services/api';
 import type { Category, Product } from '../types/api';
 import { getApiErrorMessage } from '../utils/formatters';
 
-type ProductFormProps = NativeStackScreenProps<RootStackParamList, 'ProductForm'>;
+type ProductFormProps = RootStackScreenProps<'ProductForm'>;
 
 type ProductFormState = {
   name: string;
@@ -46,6 +46,8 @@ const emptyForm: ProductFormState = {
 };
 
 export function ProductFormScreen({ navigation, route }: ProductFormProps) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const productId = route.params?.productId;
   const isEditing = Boolean(productId);
   const [form, setForm] = useState<ProductFormState>(emptyForm);
@@ -204,7 +206,7 @@ export function ProductFormScreen({ navigation, route }: ProductFormProps) {
           <IconButton
             label="Voltar"
             onPress={() => navigation.goBack()}
-            icon={<ArrowLeft size={20} color={colors.text} />}
+            icon={<ArrowLeft size={20} color={theme.text} />}
           />
         }
       />
@@ -214,28 +216,42 @@ export function ProductFormScreen({ navigation, route }: ProductFormProps) {
           <Image source={{ uri: previewUri }} style={styles.preview} />
         ) : (
           <View style={styles.previewPlaceholder}>
-            <Camera size={32} color={colors.muted} />
+            <Camera size={32} color={theme.muted} />
             <Text style={styles.previewText}>Selecionar imagem</Text>
           </View>
         )}
       </Pressable>
 
       <View style={styles.form}>
-        <TextField label="Nome" value={form.name} onChangeText={(value) => updateForm('name', value)} />
+        <TextField
+          label="Nome"
+          value={form.name}
+          onChangeText={(value) => updateForm('name', value)}
+          autoCapitalize="words"
+          textContentType="name"
+        />
         <TextField
           label="Descricao"
           value={form.description}
           onChangeText={(value) => updateForm('description', value)}
+          autoCapitalize="sentences"
+          autoCorrect
           multiline
           style={styles.textarea}
         />
-        <TextField label="Codigo" value={form.code} onChangeText={(value) => updateForm('code', value)} />
+        <TextField
+          label="Codigo"
+          value={form.code}
+          onChangeText={(value) => updateForm('code', value)}
+          autoCapitalize="characters"
+          returnKeyType="next"
+        />
         <View style={styles.row}>
           <View style={styles.flex}>
             <TextField
               label="Preco"
               value={form.price}
-              onChangeText={(value) => updateForm('price', value.replace(',', '.'))}
+              onChangeText={(value) => updateForm('price', value.replace(',', '.').replace(/[^0-9.]/g, ''))}
               keyboardType="decimal-pad"
             />
           </View>
@@ -243,7 +259,7 @@ export function ProductFormScreen({ navigation, route }: ProductFormProps) {
             <TextField
               label="Estoque"
               value={form.quantity}
-              onChangeText={(value) => updateForm('quantity', value)}
+              onChangeText={(value) => updateForm('quantity', value.replace(/[^0-9]/g, ''))}
               keyboardType="number-pad"
             />
           </View>
@@ -251,7 +267,7 @@ export function ProductFormScreen({ navigation, route }: ProductFormProps) {
         <TextField
           label="Estoque minimo"
           value={form.minimumStock}
-          onChangeText={(value) => updateForm('minimumStock', value)}
+          onChangeText={(value) => updateForm('minimumStock', value.replace(/[^0-9]/g, ''))}
           keyboardType="number-pad"
         />
 
@@ -287,94 +303,98 @@ export function ProductFormScreen({ navigation, route }: ProductFormProps) {
           </ScrollView>
           {categories.length === 0 ? (
             <Text style={styles.helperText}>
-              Cadastre uma categoria pela API ou rode o seed antes de criar produtos.
+              Cadastre uma categoria antes de criar produtos.
             </Text>
           ) : null}
         </View>
 
         <Button
-          label="Salvar"
+          label="Salvar produto"
           onPress={() => void handleSubmit()}
           loading={loading}
-          icon={<Save size={18} color={colors.white} />}
+          icon={<Save size={18} color={theme.white} />}
         />
       </View>
     </Screen>
   );
 }
 
-const styles = StyleSheet.create({
-  imagePicker: {
-    width: '100%',
-    aspectRatio: 1.6,
-    borderRadius: radius.md,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface
-  },
-  preview: {
-    width: '100%',
-    height: '100%'
-  },
-  previewPlaceholder: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm
-  },
-  previewText: {
-    color: colors.muted,
-    fontWeight: '700'
-  },
-  form: {
-    gap: spacing.lg
-  },
-  textarea: {
-    minHeight: 96,
-    textAlignVertical: 'top',
-    paddingVertical: spacing.md
-  },
-  row: {
-    flexDirection: 'row',
-    gap: spacing.md
-  },
-  flex: {
-    flex: 1
-  },
-  categorySection: {
-    gap: spacing.sm
-  },
-  categoryLabel: {
-    color: colors.text,
-    fontWeight: '700',
-    fontSize: 14
-  },
-  categoryList: {
-    gap: spacing.sm
-  },
-  categoryPill: {
-    minHeight: 40,
-    justifyContent: 'center',
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-    paddingHorizontal: spacing.md
-  },
-  categoryPillSelected: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary
-  },
-  categoryPillText: {
-    color: colors.text,
-    fontWeight: '700'
-  },
-  categoryPillTextSelected: {
-    color: colors.white
-  },
-  helperText: {
-    color: colors.muted,
-    fontSize: 13
-  }
-});
+function createStyles(theme: ReturnType<typeof useTheme>['theme']) {
+  return StyleSheet.create({
+    imagePicker: {
+      width: '100%',
+      aspectRatio: 1.6,
+      borderRadius: radius.md,
+      overflow: 'hidden',
+      borderWidth: 1,
+      borderColor: theme.border,
+      backgroundColor: theme.surface
+    },
+    preview: {
+      width: '100%',
+      height: '100%'
+    },
+    previewPlaceholder: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.sm,
+      backgroundColor: theme.surfaceMuted
+    },
+    previewText: {
+      color: theme.muted,
+      fontWeight: '800'
+    },
+    form: {
+      gap: spacing.lg
+    },
+    textarea: {
+      minHeight: 96,
+      textAlignVertical: 'top',
+      paddingVertical: spacing.md
+    },
+    row: {
+      flexDirection: 'row',
+      gap: spacing.md
+    },
+    flex: {
+      flex: 1
+    },
+    categorySection: {
+      gap: spacing.sm
+    },
+    categoryLabel: {
+      color: theme.text,
+      fontWeight: '800',
+      fontSize: 14
+    },
+    categoryList: {
+      gap: spacing.sm
+    },
+    categoryPill: {
+      minHeight: 42,
+      justifyContent: 'center',
+      borderRadius: radius.md,
+      borderWidth: 1,
+      borderColor: theme.border,
+      backgroundColor: theme.surface,
+      paddingHorizontal: spacing.md
+    },
+    categoryPillSelected: {
+      backgroundColor: theme.primary,
+      borderColor: theme.primary
+    },
+    categoryPillText: {
+      color: theme.text,
+      fontWeight: '800'
+    },
+    categoryPillTextSelected: {
+      color: theme.white
+    },
+    helperText: {
+      color: theme.muted,
+      fontSize: 13,
+      lineHeight: 19
+    }
+  });
+}

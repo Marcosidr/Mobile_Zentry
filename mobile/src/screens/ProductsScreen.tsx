@@ -1,7 +1,6 @@
 import { useFocusEffect } from '@react-navigation/native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { LogOut, Plus, RefreshCcw, Search, Users } from 'lucide-react-native';
-import { useCallback, useState } from 'react';
+import { LogOut, Plus, RefreshCcw, Search } from 'lucide-react-native';
+import { useCallback, useMemo, useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../components/Button';
 import { EmptyState } from '../components/EmptyState';
@@ -11,17 +10,20 @@ import { ProductCard } from '../components/ProductCard';
 import { RoleBadge } from '../components/RoleBadge';
 import { Screen } from '../components/Screen';
 import { TextField } from '../components/TextField';
-import { colors, spacing } from '../constants/theme';
+import { spacing } from '../constants/theme';
 import { useAuth } from '../contexts/AuthContext';
-import type { RootStackParamList } from '../navigation/types';
+import { useTheme } from '../contexts/ThemeContext';
+import type { MainTabScreenProps } from '../navigation/types';
 import { api } from '../services/api';
 import type { Product } from '../types/api';
 import { getApiErrorMessage } from '../utils/formatters';
 
-type ProductsScreenProps = NativeStackScreenProps<RootStackParamList, 'Products'>;
+type ProductsScreenProps = MainTabScreenProps<'ProductsTab'>;
 
 export function ProductsScreen({ navigation }: ProductsScreenProps) {
   const { user, signOut } = useAuth();
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
@@ -63,7 +65,7 @@ export function ProductsScreen({ navigation }: ProductsScreenProps) {
             <IconButton
               label="Sair"
               onPress={() => void signOut()}
-              icon={<LogOut size={20} color={colors.text} />}
+              icon={<LogOut size={20} color={theme.text} />}
             />
           </View>
         }
@@ -76,6 +78,7 @@ export function ProductsScreen({ navigation }: ProductsScreenProps) {
             value={search}
             onChangeText={setSearch}
             placeholder="Nome ou codigo"
+            autoCapitalize="none"
             returnKeyType="search"
             onSubmitEditing={() => void loadProducts()}
           />
@@ -83,31 +86,23 @@ export function ProductsScreen({ navigation }: ProductsScreenProps) {
         <IconButton
           label="Buscar produto"
           onPress={() => void loadProducts()}
-          icon={<Search size={20} color={colors.text} />}
+          icon={<Search size={20} color={theme.text} />}
         />
       </View>
 
       <View style={styles.actionRow}>
         {user?.role === 'ADMIN' ? (
-          <>
-            <Button
-              label="Novo produto"
-              onPress={() => navigation.navigate('ProductForm')}
-              icon={<Plus size={18} color={colors.white} />}
-            />
-            <Button
-              label="Usuarios"
-              onPress={() => navigation.navigate('Users')}
-              variant="secondary"
-              icon={<Users size={18} color={colors.text} />}
-            />
-          </>
+          <Button
+            label="Novo produto"
+            onPress={() => navigation.navigate('ProductForm')}
+            icon={<Plus size={18} color={theme.white} />}
+          />
         ) : null}
         <Button
           label="Atualizar"
           onPress={() => void handleRefresh()}
           variant="secondary"
-          icon={<RefreshCcw size={18} color={colors.text} />}
+          icon={<RefreshCcw size={18} color={theme.text} />}
         />
       </View>
 
@@ -139,34 +134,37 @@ export function ProductsScreen({ navigation }: ProductsScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  headerActions: {
-    alignItems: 'flex-end',
-    gap: spacing.sm
-  },
-  searchRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: spacing.md
-  },
-  searchField: {
-    flex: 1
-  },
-  actionRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.md
-  },
-  listContent: {
-    flexGrow: 1,
-    paddingBottom: spacing.xl
-  },
-  separator: {
-    height: spacing.md
-  },
-  loadingText: {
-    color: colors.muted,
-    textAlign: 'center',
-    marginTop: spacing.xl
-  }
-});
+function createStyles(theme: ReturnType<typeof useTheme>['theme']) {
+  return StyleSheet.create({
+    headerActions: {
+      alignItems: 'flex-end',
+      gap: spacing.sm
+    },
+    searchRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      gap: spacing.md
+    },
+    searchField: {
+      flex: 1
+    },
+    actionRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.md
+    },
+    listContent: {
+      flexGrow: 1,
+      paddingBottom: spacing.xxl
+    },
+    separator: {
+      height: spacing.md
+    },
+    loadingText: {
+      color: theme.muted,
+      textAlign: 'center',
+      marginTop: spacing.xl,
+      fontWeight: '700'
+    }
+  });
+}

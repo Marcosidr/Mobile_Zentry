@@ -1,4 +1,3 @@
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ArrowDownCircle, ArrowLeft, ArrowUpCircle, Save } from 'lucide-react-native';
 import { useEffect, useMemo, useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
@@ -7,18 +6,18 @@ import { Header } from '../components/Header';
 import { IconButton } from '../components/IconButton';
 import { Screen } from '../components/Screen';
 import { TextField } from '../components/TextField';
-import { colors, radius, spacing } from '../constants/theme';
-import type { RootStackParamList } from '../navigation/types';
+import { radius, spacing } from '../constants/theme';
+import { useTheme } from '../contexts/ThemeContext';
+import type { RootStackScreenProps } from '../navigation/types';
 import { api } from '../services/api';
 import type { Product, StockMovementResponse } from '../types/api';
 import { getApiErrorMessage } from '../utils/formatters';
 
-type StockMovementProps = NativeStackScreenProps<
-  RootStackParamList,
-  'StockMovement'
->;
+type StockMovementProps = RootStackScreenProps<'StockMovement'>;
 
 export function StockMovementScreen({ navigation, route }: StockMovementProps) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const [product, setProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState('1');
   const [note, setNote] = useState('');
@@ -26,7 +25,7 @@ export function StockMovementScreen({ navigation, route }: StockMovementProps) {
   const { productId, type } = route.params;
 
   const title = type === 'ENTRADA' ? 'Registrar entrada' : 'Registrar saida';
-  const movementColor = type === 'ENTRADA' ? colors.success : colors.accent;
+  const movementColor = type === 'ENTRADA' ? theme.success : theme.accent;
   const nextQuantity = useMemo(() => {
     if (!product || Number.isNaN(Number(quantity))) {
       return product?.quantity ?? 0;
@@ -88,7 +87,7 @@ export function StockMovementScreen({ navigation, route }: StockMovementProps) {
           <IconButton
             label="Voltar"
             onPress={() => navigation.goBack()}
-            icon={<ArrowLeft size={20} color={colors.text} />}
+            icon={<ArrowLeft size={20} color={theme.text} />}
           />
         }
       />
@@ -110,13 +109,16 @@ export function StockMovementScreen({ navigation, route }: StockMovementProps) {
       <TextField
         label="Quantidade"
         value={quantity}
-        onChangeText={setQuantity}
+        onChangeText={(value) => setQuantity(value.replace(/[^0-9]/g, ''))}
         keyboardType="number-pad"
+        returnKeyType="next"
       />
       <TextField
         label="Observacao"
         value={note}
         onChangeText={setNote}
+        autoCapitalize="sentences"
+        autoCorrect
         multiline
         style={styles.textarea}
       />
@@ -125,40 +127,44 @@ export function StockMovementScreen({ navigation, route }: StockMovementProps) {
         label="Salvar movimentacao"
         onPress={() => void handleSubmit()}
         loading={loading}
-        icon={<Save size={18} color={colors.white} />}
+        disabled={!quantity}
+        icon={<Save size={18} color={theme.white} />}
       />
     </Screen>
   );
 }
 
-const styles = StyleSheet.create({
-  typeBox: {
-    minHeight: 92,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    backgroundColor: colors.surface,
-    padding: spacing.md
-  },
-  typeContent: {
-    flex: 1,
-    gap: spacing.xs
-  },
-  typeTitle: {
-    color: colors.text,
-    fontSize: 18,
-    fontWeight: '900'
-  },
-  typeText: {
-    color: colors.muted,
-    fontSize: 14
-  },
-  textarea: {
-    minHeight: 96,
-    textAlignVertical: 'top',
-    paddingVertical: spacing.md
-  }
-});
-
+function createStyles(theme: ReturnType<typeof useTheme>['theme']) {
+  return StyleSheet.create({
+    typeBox: {
+      minHeight: 92,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+      borderRadius: radius.md,
+      borderWidth: 1,
+      backgroundColor: theme.surface,
+      padding: spacing.md
+    },
+    typeContent: {
+      flex: 1,
+      gap: spacing.xs
+    },
+    typeTitle: {
+      color: theme.text,
+      fontSize: 18,
+      fontWeight: '900'
+    },
+    typeText: {
+      color: theme.muted,
+      fontSize: 14,
+      lineHeight: 20,
+      fontWeight: '600'
+    },
+    textarea: {
+      minHeight: 96,
+      textAlignVertical: 'top',
+      paddingVertical: spacing.md
+    }
+  });
+}

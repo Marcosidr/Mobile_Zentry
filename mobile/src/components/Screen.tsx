@@ -1,4 +1,5 @@
 import type { PropsWithChildren } from 'react';
+import { useMemo } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import {
   KeyboardAvoidingView,
@@ -8,7 +9,8 @@ import {
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, spacing } from '../constants/theme';
+import { spacing } from '../constants/theme';
+import { useTheme } from '../contexts/ThemeContext';
 
 type ScreenProps = PropsWithChildren<{
   scroll?: boolean;
@@ -22,6 +24,9 @@ export function Screen({
   style,
   contentContainerStyle
 }: ScreenProps) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
   return (
     <SafeAreaView style={[styles.safeArea, style]}>
       <KeyboardAvoidingView
@@ -44,22 +49,24 @@ export function Screen({
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: colors.background
-  },
-  keyboardAvoidingView: {
-    flex: 1
-  },
-  scrollContent: {
-    padding: spacing.lg,
-    gap: spacing.lg
-  },
-  content: {
-    flex: 1,
-    padding: spacing.lg,
-    gap: spacing.lg
-  }
-});
-
+function createStyles(theme: ReturnType<typeof useTheme>['theme']) {
+  return StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: theme.background
+    },
+    keyboardAvoidingView: {
+      flex: 1
+    },
+    scrollContent: {
+      flexGrow: 1,
+      padding: spacing.lg,
+      gap: spacing.lg
+    },
+    content: {
+      flex: 1,
+      padding: spacing.lg,
+      gap: spacing.lg
+    }
+  });
+}
