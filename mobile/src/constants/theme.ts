@@ -1,40 +1,40 @@
 const baseColors = {
   white: '#FFFFFF',
-  black: '#0F1720'
+  black: '#120F10'
 };
 
 export const lightTheme = {
   ...baseColors,
-  background: '#F4F7F6',
+  background: '#F5F2F0',
   surface: '#FFFFFF',
-  surfaceMuted: '#EEF3F2',
-  border: '#D5DFDC',
-  text: '#13211F',
-  muted: '#65736F',
-  primary: '#1E6F5C',
-  primaryDark: '#155344',
-  accent: '#C8563F',
-  success: '#2F855A',
-  warning: '#A66A13',
-  danger: '#C2412D',
+  surfaceMuted: '#EFE9E6',
+  border: '#DED5D2',
+  text: '#22191C',
+  muted: '#75686C',
+  primary: '#A73446',
+  primaryDark: '#7B2635',
+  accent: '#B66443',
+  success: '#8E6A10',
+  warning: '#B77918',
+  danger: '#C43D32',
   tabBar: '#FFFFFF'
 };
 
 export const darkTheme = {
   ...baseColors,
-  background: '#0F1715',
-  surface: '#17211F',
-  surfaceMuted: '#202D2A',
-  border: '#2C3A36',
-  text: '#E8F0ED',
-  muted: '#A4B0AC',
-  primary: '#287762',
-  primaryDark: '#1D5D4D',
-  accent: '#F08A6E',
-  success: '#6DD39D',
-  warning: '#F1B557',
-  danger: '#FF7C67',
-  tabBar: '#131D1A'
+  background: '#151112',
+  surface: '#201A1C',
+  surfaceMuted: '#2B2326',
+  border: '#3C3235',
+  text: '#F3ECEC',
+  muted: '#B7A9AC',
+  primary: '#D85C72',
+  primaryDark: '#F17A8D',
+  accent: '#E28B5F',
+  success: '#D4A22A',
+  warning: '#F0B24E',
+  danger: '#FF756A',
+  tabBar: '#1A1517'
 };
 
 export type AppTheme = typeof lightTheme;
@@ -55,4 +55,3 @@ export const radius = {
   sm: 6,
   md: 8
 };
-
